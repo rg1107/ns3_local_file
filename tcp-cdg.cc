@@ -71,6 +71,11 @@ namespace ns3
 
 	TcpCDG::TcpCDG (const TcpCDG &sock)
 	:TcpCongestionOps (sock), // Doubt
+	window(sock.window)
+	backoff_beta(sock.backoff_beta)
+	backoff_factor(sock.backoff_factor)
+	ineffective_thresh(sock.ineffective_thresh)
+	ineffective_hold(sock.ineffective_hold)
 	rtt_seq (sock.rtt_seq),
 	loss_cwnd (sock.loss_cwnd),
 	tail (sock.tail),
@@ -111,7 +116,7 @@ namespace ns3
 		return (uint32_t)res;
 	}
 
-	static int32_t TcpCDG::tcp_cdg_grad (Ptr<TcpSocketState tcb)
+	static int32_t TcpCDG::tcp_cdg_grad (Ptr<TcpSocketState> tcb)
 	{
 		//Write the code here
 		int32_t grad = 0;
@@ -183,13 +188,14 @@ namespace ns3
 	//Find out tcb's corresponding attributes for below attributes. If not present initialise them in .h and .cc files
 
 		/* reset TLP and prohibit cwnd undo: */
-		tp->tlp_high_seq = 0;
-		tp->prior_ssthresh = 0;
+		//tp->tlp_high_seq = 0;
+		//tp->prior_ssthresh = 0;
+		tcb.m_initialSsThresh = 0;
 		/* set PRR target and enter CWR: */
 		tcb.m_ssThresh = std::max(2U, (tcb.m_cWnd * backoff_beta) >> 10U);
-		tp->prr_delivered = 0;
-		tp->prr_out = 0;
-		tp->prior_cwnd = tcb.m_cWnd;
+		//tp->prr_delivered = 0;
+		//tp->prr_out = 0;
+		tcb.m_initialCWnd = tcb.m_cWnd;
 		tcb.m_highTxMark = tcb.m_nextTxSequence;
 
 		tcb.m_congState = TcpSocketState::CA_CWR;
