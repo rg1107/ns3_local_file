@@ -1,3 +1,5 @@
+#ifndef TCPCDG_H
+#define TCPCDG_H
 #include "ns3/tcp-congestion-ops.h"
 // Functions to be implemented by default
 
@@ -5,20 +7,37 @@ namespace ns3{
 
 class TcpCDG : public TcpCongestionOps
 {
+	public:
 
-	virtual std::string GetName () const;
+		virtual std::string GetName () const;
 
-	virtual uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight);
+		virtual uint32_t GetSsThresh (Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight);
 
-	virtual void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
+		virtual void IncreaseWindow (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
 
-	virtual void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked,const Time& rtt);
+		virtual void PktsAcked (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked,const Time& rtt);
 
-	virtual Ptr<TcpCongestionOps> Fork ();
+		virtual void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event);
 
-	virtual void CwndEvent (Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCaEvent_t event);
+		virtual Ptr<TcpCongestionOps> Fork ();
 
+		void CongestionAvoidance (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
 
+		uint32_t SlowStart (Ptr<TcpSocketState> tcb, uint32_t segmentsAcked);
+
+		int tcp_cdg_backoff (Ptr<TcpSocketState> tcb, int32_t grad);
+
+		uint32_t nexp_u32(uint32_t ux);
+
+		int32_t tcp_cdg_grad (Ptr<TcpSocketState> tcb);
+
+		static TypeId GetTypeId (void);
+
+		TcpCDG (void);
+
+		TcpCDG (const TcpCDG& sock);
+
+		virtual ~TcpCDG (void);
 
 
 	struct minmax {
@@ -40,7 +59,7 @@ class TcpCDG : public TcpCongestionOps
 
 	private:
 
-	cdg_state state 	{cdg_state::CGD_UNKNOWN};
+	cdg_state state 	{cdg_state::CDG_UNKNOWN};
 	int window		{0444};
 	unsigned int backoff_beta 	{0444};
 	unsigned int backoff_factor	{0444};
@@ -56,9 +75,12 @@ class TcpCDG : public TcpCongestionOps
 	unsigned int backoff_cnt;
 	unsigned int delack;
 	bool ecn_ce;
+	TcpNewReno tnr;
 };
 
-}
+} //namespace ns3
+
+#endif // TCPCDG_H
 
 
 
